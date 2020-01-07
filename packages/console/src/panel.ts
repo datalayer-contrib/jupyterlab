@@ -4,47 +4,39 @@
 import {
   ISessionContext,
   SessionContext,
-  sessionContextDialogs
+  sessionContextDialogs,
+  MainAreaWidget
 } from '@jupyterlab/apputils';
-
 import { IEditorMimeTypeService } from '@jupyterlab/codeeditor';
-
 import { PathExt, Time } from '@jupyterlab/coreutils';
-
-import { UUID } from '@lumino/coreutils';
-
 import {
   IRenderMimeRegistry,
   RenderMimeRegistry
 } from '@jupyterlab/rendermime';
-
 import { ServiceManager } from '@jupyterlab/services';
+import { consoleIcon } from '@jupyterlab/ui-components';
 
-import { Token } from '@lumino/coreutils';
-
+import { Token, UUID } from '@lumino/coreutils';
+import { IDisposable } from '@lumino/disposable';
 import { Message } from '@lumino/messaging';
-
 import { Panel } from '@lumino/widgets';
 
 import { CodeConsole } from './widget';
-import { IDisposable } from '@lumino/disposable';
 
 /**
  * The class name added to console panels.
  */
 const PANEL_CLASS = 'jp-ConsolePanel';
 
-const CONSOLE_ICON_CLASS = 'jp-CodeConsoleIcon';
-
 /**
  * A panel which contains a console and the ability to add other children.
  */
-export class ConsolePanel extends Panel {
+export class ConsolePanel extends MainAreaWidget<Panel> {
   /**
    * Construct a console panel.
    */
   constructor(options: ConsolePanel.IOptions) {
-    super();
+    super({ content: new Panel() });
     this.addClass(PANEL_CLASS);
     let {
       rendermime,
@@ -85,22 +77,22 @@ export class ConsolePanel extends Panel {
       contentFactory,
       modelFactory
     });
-    this.addWidget(this.console);
+    this.content.addWidget(this.console);
 
     void sessionContext.initialize().then(async value => {
       if (value) {
         await sessionContextDialogs.selectKernel(sessionContext);
       }
       this._connected = new Date();
-      this._updateTitle();
+      this._updateTitlePanel();
     });
 
     this.console.executed.connect(this._onExecuted, this);
-    this._updateTitle();
-    sessionContext.kernelChanged.connect(this._updateTitle, this);
-    sessionContext.propertyChanged.connect(this._updateTitle, this);
+    this._updateTitlePanel();
+    sessionContext.kernelChanged.connect(this._updateTitlePanel, this);
+    sessionContext.propertyChanged.connect(this._updateTitlePanel, this);
 
-    this.title.icon = CONSOLE_ICON_CLASS;
+    this.title.iconRenderer = consoleIcon;
     this.title.closable = true;
     this.id = `console-${count}`;
   }
@@ -113,7 +105,7 @@ export class ConsolePanel extends Panel {
   /**
    * The console widget used by the panel.
    */
-  readonly console: CodeConsole;
+  console: CodeConsole;
 
   /**
    * The session used by the panel.
@@ -154,13 +146,13 @@ export class ConsolePanel extends Panel {
    */
   private _onExecuted(sender: CodeConsole, args: Date) {
     this._executed = args;
-    this._updateTitle();
+    this._updateTitlePanel();
   }
 
   /**
    * Update the console panel title.
    */
-  private _updateTitle(): void {
+  private _updateTitlePanel(): void {
     Private.updateTitle(this, this._connected, this._executed);
   }
 

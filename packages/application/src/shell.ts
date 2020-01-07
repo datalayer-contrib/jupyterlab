@@ -3,7 +3,7 @@
 
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 
-import { DockPanelSvg, TabBarSvg } from '@jupyterlab/ui-components';
+import { DockPanelSvg, JLIcon } from '@jupyterlab/ui-components';
 
 import { ArrayExt, find, IIterator, iter, toArray } from '@lumino/algorithm';
 
@@ -179,9 +179,7 @@ export class LabShell extends Widget implements JupyterFrontEnd.IShell {
     let topHandler = (this._topHandler = new Private.PanelHandler());
     let bottomPanel = (this._bottomPanel = new BoxPanel());
     let hboxPanel = new BoxPanel();
-    let dockPanel = (this._dockPanel = new DockPanelSvg({
-      kind: 'dockPanelBar'
-    }));
+    let dockPanel = (this._dockPanel = new DockPanelSvg());
     MessageLoop.installMessageHook(dockPanel, this._dockChildHook);
 
     let hsplitPanel = new SplitPanel();
@@ -499,6 +497,30 @@ export class LabShell extends Widget implements JupyterFrontEnd.IShell {
     }
   }
 
+  /*
+   * Activate the next TabBar.
+   */
+  activateNextTabBar(): void {
+    let nextBar = this._adjacentBar('next');
+    if (nextBar) {
+      if (nextBar.currentTitle) {
+        nextBar.currentTitle.owner.activate();
+      }
+    }
+  }
+
+  /*
+   * Activate the next TabBar.
+   */
+  activatePreviousTabBar(): void {
+    let nextBar = this._adjacentBar('previous');
+    if (nextBar) {
+      if (nextBar.currentTitle) {
+        nextBar.currentTitle.owner.activate();
+      }
+    }
+  }
+
   add(
     widget: Widget,
     area: ILabShell.Area = 'main',
@@ -745,9 +767,19 @@ export class LabShell extends Widget implements JupyterFrontEnd.IShell {
       ref = find(dock.widgets(), value => value.id === options!.ref!) || null;
     }
 
+    const { title } = widget;
     // Add widget ID to tab so that we can get a handle on the tab's widget
     // (for context menu support)
-    widget.title.dataset = { ...widget.title.dataset, id: widget.id };
+    title.dataset = { ...title.dataset, id: widget.id };
+
+    // set an appropriate style class for the iconRenderer
+    if (title.iconRenderer instanceof JLIcon) {
+      title.iconClass = title.iconRenderer.class({
+        className: title.iconClass,
+        justify: 'center',
+        kind: 'mainAreaTab'
+      });
+    }
 
     dock.addWidget(widget, { mode, ref });
 
@@ -1062,8 +1094,7 @@ namespace Private {
      * Construct a new side bar handler.
      */
     constructor() {
-      this._sideBar = new TabBarSvg<Widget>({
-        kind: 'sideBar',
+      this._sideBar = new TabBar<Widget>({
         insertBehavior: 'none',
         removeBehavior: 'none',
         allowDeselect: true
@@ -1152,6 +1183,16 @@ namespace Private {
       // Store the parent id in the title dataset
       // in order to dispatch click events to the right widget.
       title.dataset = { id: widget.id };
+
+      // set an appropriate style class for the iconRenderer
+      if (title.iconRenderer instanceof JLIcon) {
+        title.iconClass = title.iconRenderer.class({
+          className: title.iconClass,
+          justify: 'center',
+          kind: 'sideBar'
+        });
+      }
+
       this._refreshVisibility();
     }
 

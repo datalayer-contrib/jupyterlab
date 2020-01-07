@@ -26,14 +26,16 @@ import {
 
 import { PathExt, URLExt } from '@jupyterlab/coreutils';
 
-import { IStateDB } from '@jupyterlab/statedb';
-
-import { ISettingRegistry } from '@jupyterlab/settingregistry';
-
 import {
   IPropertyInspectorProvider,
   SideBarPropertyInspectorProvider
 } from '@jupyterlab/property-inspector';
+
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+
+import { IStateDB } from '@jupyterlab/statedb';
+
+import { buildIcon } from '@jupyterlab/ui-components';
 
 import { each, iter, toArray } from '@lumino/algorithm';
 
@@ -53,6 +55,11 @@ namespace CommandIDs {
 
   export const activatePreviousTab: string =
     'application:activate-previous-tab';
+
+  export const activateNextTabBar: string = 'application:activate-next-tab-bar';
+
+  export const activatePreviousTabBar: string =
+    'application:activate-previous-tab-bar';
 
   export const close = 'application:close';
 
@@ -575,6 +582,22 @@ function addCommands(app: JupyterLab, palette: ICommandPalette): void {
   });
   palette.addItem({ command: CommandIDs.activatePreviousTab, category });
 
+  commands.addCommand(CommandIDs.activateNextTabBar, {
+    label: 'Activate Next Tab Bar',
+    execute: () => {
+      shell.activateNextTabBar();
+    }
+  });
+  palette.addItem({ command: CommandIDs.activateNextTabBar, category });
+
+  commands.addCommand(CommandIDs.activatePreviousTabBar, {
+    label: 'Activate Previous Tab Bar',
+    execute: () => {
+      shell.activatePreviousTabBar();
+    }
+  });
+  palette.addItem({ command: CommandIDs.activatePreviousTabBar, category });
+
   // A CSS selector targeting tabs in the main area. This is a very
   // specific selector since we really only want tabs that are
   // in the main area, as opposed to those in sidebars, ipywidgets, etc.
@@ -584,7 +607,7 @@ function addCommands(app: JupyterLab, palette: ICommandPalette): void {
   commands.addCommand(CommandIDs.close, {
     label: () => 'Close Tab',
     isEnabled: () =>
-      !!shell.currentWidget && !!shell.currentWidget.title.closable,
+      !!shell.currentWidget && shell.currentWidget.title.closable,
     execute: () => {
       if (shell.currentWidget) {
         shell.currentWidget.close();
@@ -652,7 +675,7 @@ function addCommands(app: JupyterLab, palette: ICommandPalette): void {
   });
 
   app.commands.addCommand(CommandIDs.toggleLeftArea, {
-    label: args => 'Show Left Sidebar',
+    label: () => 'Show Left Sidebar',
     execute: () => {
       if (shell.leftCollapsed) {
         shell.expandLeft();
@@ -669,7 +692,7 @@ function addCommands(app: JupyterLab, palette: ICommandPalette): void {
   palette.addItem({ command: CommandIDs.toggleLeftArea, category });
 
   app.commands.addCommand(CommandIDs.toggleRightArea, {
-    label: args => 'Show Right Sidebar',
+    label: () => 'Show Right Sidebar',
     execute: () => {
       if (shell.rightCollapsed) {
         shell.expandRight();
@@ -686,7 +709,7 @@ function addCommands(app: JupyterLab, palette: ICommandPalette): void {
   palette.addItem({ command: CommandIDs.toggleRightArea, category });
 
   app.commands.addCommand(CommandIDs.togglePresentationMode, {
-    label: args => 'Presentation Mode',
+    label: () => 'Presentation Mode',
     execute: () => {
       shell.presentationMode = !shell.presentationMode;
     },
@@ -799,7 +822,7 @@ const propertyInspector: JupyterFrontEndPlugin<IPropertyInspectorProvider> = {
   provides: IPropertyInspectorProvider,
   activate: (app: JupyterFrontEnd, labshell: ILabShell) => {
     const widget = new SideBarPropertyInspectorProvider(labshell);
-    widget.title.iconClass = 'jp-BuildIcon jp-SideBar-tabIcon';
+    widget.title.iconRenderer = buildIcon;
     widget.title.caption = 'Property Inspector';
     widget.id = 'jp-property-inspector';
     labshell.add(widget, 'left');

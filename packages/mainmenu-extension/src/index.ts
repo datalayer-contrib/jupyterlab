@@ -33,6 +33,8 @@ import {
 
 import { ServerConnection } from '@jupyterlab/services';
 
+import { jupyterIcon } from '@jupyterlab/ui-components';
+
 /**
  * A namespace for command IDs of semantic extension points.
  */
@@ -129,8 +131,13 @@ const plugin: JupyterFrontEndPlugin<IMainMenu> = {
     menu.id = 'jp-MainMenu';
 
     let logo = new Widget();
-    logo.addClass('jp-MainAreaPortraitIcon');
-    logo.addClass('jp-JupyterIcon');
+    jupyterIcon.element({
+      container: logo.node,
+      justify: 'center',
+      margin: '2px 2px 2px 8px',
+      height: 'auto',
+      width: '16px'
+    });
     logo.id = 'jp-MainLogo';
 
     // Only add quit button if the back-end supports it by checking page config.
@@ -723,6 +730,8 @@ export function createTabsMenu(
     [
       { command: 'application:activate-next-tab' },
       { command: 'application:activate-previous-tab' },
+      { command: 'application:activate-next-tab-bar' },
+      { command: 'application:activate-previous-tab-bar' },
       { command: CommandIDs.activatePreviouslyUsedTab }
     ],
     0

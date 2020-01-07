@@ -1,6 +1,6 @@
 {
   "name": "@jupyterlab/nbformat",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0-beta.2",
   "description": "Notebook format interfaces",
   "homepage": "https://github.com/jupyterlab/jupyterlab",
   "bugs": {
@@ -33,7 +33,7 @@
     "watch": "tsc -b -w --listEmittedFiles"
   },
   "dependencies": {
-    "@lumino/coreutils": "^1.4.0"
+    "@lumino/coreutils": "^1.4.2"
   },
   "devDependencies": {
     "rimraf": "~3.0.0",
