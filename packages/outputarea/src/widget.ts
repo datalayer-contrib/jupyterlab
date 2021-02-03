@@ -381,7 +381,7 @@ export class OutputArea extends Widget {
     });
 
     const dialog = new Dialog<Promise<string>>({
-      title: 'We need your input',
+      title: 'Your input is requested',
       body: modalInput,
       buttons
     });
@@ -821,6 +821,9 @@ export class Stdin extends Widget implements IStdin {
     return this._promise.promise.then(() => this._value);
   }
 
+  /**
+   * Submit and get the  value of the Stdin widget.
+   */
   getValue(): Promise<string> {
     this.submit();
     return this.value;
